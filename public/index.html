@@ -2447,6 +2447,24 @@ async function patchShareLocation(value) {
   } catch {}
 }
 
+/** Códigos GeolocationPositionError: 1 denied, 2 unavailable, 3 timeout */
+const GEO_ERR_DENIED = 1;
+const GEO_ERR_UNAVAILABLE = 2;
+const GEO_ERR_TIMEOUT = 3;
+
+async function getGeolocationPermissionState() {
+  try {
+    if (!navigator.permissions || !navigator.permissions.query) return 'unknown';
+    const status = await navigator.permissions.query({ name: 'geolocation' });
+    if (status.state === 'granted' || status.state === 'denied' || status.state === 'prompt') {
+      return status.state;
+    }
+    return 'unknown';
+  } catch {
+    return 'unknown';
+  }
+}
+
 function stopLocationTimers() {
   if (locationTimer10) {
     clearInterval(locationTimer10);
@@ -2508,8 +2526,26 @@ async function refreshMeUser() {
   } catch {}
 }
 
-function requestGeolocationAndEnable() {
+async function requestGeolocationAndEnable() {
   const cb = document.getElementById('share-location-cb');
+  if (!navigator.geolocation) {
+    if (cb) cb.checked = false;
+    showToast('Este browser não suporta geolocalização.', { type: 'error', duration: 5000 });
+    return;
+  }
+  const perm = await getGeolocationPermissionState();
+  if (perm === 'denied') {
+    await patchShareLocation(false);
+    if (meUser) meUser.shareLocation = false;
+    if (cb) cb.checked = false;
+    setGeoPromptVisible(true);
+    stopLocationTimers();
+    showToast(
+      'A localização está bloqueada para este site. Nas definições do browser (ícone do cadeado ou do site), permite a localização e tenta outra vez.',
+      { type: 'error', duration: 9000 }
+    );
+    return;
+  }
   navigator.geolocation.getCurrentPosition(
     async () => {
       await patchShareLocation(true);
@@ -2520,13 +2556,29 @@ function requestGeolocationAndEnable() {
       await postMyLocation();
       startLocationTimers();
     },
-    async () => {
-      await patchShareLocation(false);
-      if (meUser) meUser.shareLocation = false;
-      if (cb) cb.checked = false;
-      setGeoPromptVisible(false);
-      stopLocationTimers();
-      alert('Permissão de localização negada. A partilha foi desativada.');
+    async (err) => {
+      const code = err && err.code;
+      if (code === GEO_ERR_DENIED) {
+        await patchShareLocation(false);
+        if (meUser) meUser.shareLocation = false;
+        if (cb) cb.checked = false;
+        setGeoPromptVisible(false);
+        stopLocationTimers();
+        showToast('Permissão de localização negada. A partilha foi desativada.', { type: 'error', duration: 6000 });
+        return;
+      }
+      if (code === GEO_ERR_TIMEOUT) {
+        showToast(
+          'Demorou demasiado a obter a posição. Tenta outra vez ou toca em «Permitir localização».',
+          { type: 'error', duration: 6500 }
+        );
+        return;
+      }
+      if (code === GEO_ERR_UNAVAILABLE) {
+        showToast('Posição indisponível neste momento. Tenta mais tarde ou noutro sítio.', { type: 'error', duration: 6000 });
+        return;
+      }
+      showToast('Não foi possível obter a localização.', { type: 'error', duration: 5000 });
     },
     { enableHighAccuracy: true, timeout: 15000 }
   );
@@ -2537,6 +2589,30 @@ async function applyInitialShareState() {
     setGeoPromptVisible(false);
     return;
   }
+  if (!navigator.geolocation) {
+    await patchShareLocation(false);
+    if (meUser) meUser.shareLocation = false;
+    const cb0 = document.getElementById('share-location-cb');
+    if (cb0) cb0.checked = false;
+    setGeoPromptVisible(false);
+    stopLocationTimers();
+    showToast('Este browser não suporta geolocalização. A partilha foi desativada.', { type: 'error', duration: 5000 });
+    return;
+  }
+  const perm = await getGeolocationPermissionState();
+  if (perm === 'denied') {
+    await patchShareLocation(false);
+    if (meUser) meUser.shareLocation = false;
+    const cb1 = document.getElementById('share-location-cb');
+    if (cb1) cb1.checked = false;
+    setGeoPromptVisible(true);
+    stopLocationTimers();
+    showToast(
+      'A localização está bloqueada para este site. Nas definições do browser, permite a localização e recarrega a página.',
+      { type: 'error', duration: 9000 }
+    );
+    return;
+  }
   setGeoPromptVisible(true);
   navigator.geolocation.getCurrentPosition(
     () => {
@@ -2545,13 +2621,30 @@ async function applyInitialShareState() {
       lastLocationSentAt = 0;
       postMyLocation();
     },
-    async () => {
-      await patchShareLocation(false);
-      if (meUser) meUser.shareLocation = false;
-      const cb = document.getElementById('share-location-cb');
-      if (cb) cb.checked = false;
-      setGeoPromptVisible(false);
-      stopLocationTimers();
+    async (err) => {
+      const code = err && err.code;
+      if (code === GEO_ERR_DENIED) {
+        await patchShareLocation(false);
+        if (meUser) meUser.shareLocation = false;
+        const cb = document.getElementById('share-location-cb');
+        if (cb) cb.checked = false;
+        setGeoPromptVisible(false);
+        stopLocationTimers();
+        showToast('Permissão de localização negada. A partilha foi desativada.', { type: 'error', duration: 6000 });
+        return;
+      }
+      if (code === GEO_ERR_TIMEOUT) {
+        showToast('Demorou demasiado a obter a posição. Usa «Permitir localização» ou tenta outra vez.', { type: 'error', duration: 6500 });
+        setGeoPromptVisible(true);
+        return;
+      }
+      if (code === GEO_ERR_UNAVAILABLE) {
+        showToast('Posição indisponível neste momento. Tenta mais tarde.', { type: 'error', duration: 6000 });
+        setGeoPromptVisible(true);
+        return;
+      }
+      showToast('Não foi possível obter a localização.', { type: 'error', duration: 5000 });
+      setGeoPromptVisible(true);
     },
     { timeout: 12000 }
   );
