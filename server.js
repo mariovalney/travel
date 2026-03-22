@@ -1,3 +1,4 @@
+require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
@@ -39,7 +40,7 @@ if (AUTH_ENABLED) {
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: '/auth/google/callback',
+      callbackURL: process.env.CALLBACK_URL || '/auth/google/callback',
     },
     (_accessToken, _refreshToken, profile, done) => {
       const email = profile.emails?.[0]?.value?.toLowerCase();
