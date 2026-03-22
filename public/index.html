@@ -42,6 +42,7 @@
   --border: #e2e8ef;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --offline-bar-height: 42px;
 }
 
 html { scroll-behavior: smooth; }
@@ -326,6 +327,9 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+#day-3 .flight-card--day4-after-timeline {
+  margin-top: 28px;
 }
 .flight-time-block { text-align: center; }
 .flight-time {
@@ -1145,6 +1149,7 @@ footer {
   .content { padding: 20px 14px calc(80px + var(--safe-bottom)); }
 
   .flight-card { padding: 14px 12px; gap: 8px; margin-bottom: 18px; }
+  #day-3 .flight-card--day4-after-timeline { margin-top: 18px; }
   .flight-time { font-size: 30px; }
   .flight-iata { font-size: 8px; letter-spacing: 1px; }
   .flight-duration { font-size: 8px; letter-spacing: 1.5px; }
@@ -1194,27 +1199,49 @@ footer {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 600;
+  z-index: 601;
+  height: var(--offline-bar-height);
+  min-height: var(--offline-bar-height);
+  box-sizing: border-box;
   background: #b71c1c;
   color: #fff;
-  text-align: center;
-  padding: 10px 16px;
   font-size: 13px;
   font-weight: 500;
-  padding-top: calc(10px + env(safe-area-inset-top, 0px));
-  box-sizing: border-box;
+  padding: 0 16px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 body.app-offline {
-  padding-top: 42px;
+  padding-top: var(--offline-bar-height);
 }
-body.app-offline .offline-bar { display: block; }
-@media (min-width: 541px) {
-  body.app-offline { padding-top: 38px; }
+body.app-offline .offline-bar {
+  display: flex;
 }
 body.app-offline .btn-add-wrap,
 body.app-offline .btn-edit-trigger,
 body.app-offline #btn-remove-event {
   display: none !important;
+}
+body.app-offline .modal-overlay {
+  top: var(--offline-bar-height);
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+body.app-offline .lightbox {
+  top: var(--offline-bar-height);
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+@media (min-width: 541px) {
+  body.app-offline .days-nav {
+    top: var(--offline-bar-height);
+  }
+  body.app-offline .push-banner {
+    top: calc(52px + var(--offline-bar-height));
+  }
 }
 </style>
 </head>
@@ -1308,7 +1335,8 @@ body.app-offline #btn-remove-event {
 
   <!-- DIA 4 -->
   <div class="day-panel" id="day-3">
-    <div class="flight-card">
+    <div class="timeline" id="timeline-3"><div class="tl-loading">Carregando...</div></div>
+    <div class="flight-card flight-card--day4-after-timeline">
       <div class="flight-time-block">
         <div class="flight-time">12:55</div>
         <div class="flight-iata">AEP — Buenos Aires</div>
@@ -1322,7 +1350,6 @@ body.app-offline #btn-remove-event {
         <div class="flight-iata">GRU — São Paulo</div>
       </div>
     </div>
-    <div class="timeline" id="timeline-3"><div class="tl-loading">Carregando...</div></div>
     <div class="ending">
       <div class="ending-main">É Nois</div>
       <div class="ending-script">valeu valeu</div>
@@ -1531,8 +1558,11 @@ function readFxFromStorage() {
   }
 }
 
+/** Muitos browsers reportam navigator.onLine=true sem rede real; combina com falha do fetch de eventos. */
+let eventsApiUnreachable = false;
+
 function syncOfflineUi() {
-  const offline = !navigator.onLine;
+  const offline = !navigator.onLine || eventsApiUnreachable;
   document.body.classList.toggle('app-offline', offline);
   if (offline && document.getElementById('modal-edit')?.classList.contains('open')) {
     closeEditModalOnly();
@@ -1920,8 +1950,12 @@ async function loadEvents() {
       applyRouteFromUrl({ initial: true });
       routeInitialized = true;
     }
+    eventsApiUnreachable = false;
+    syncOfflineUi();
   } catch (err) {
     console.error('loadEvents error', err);
+    eventsApiUnreachable = true;
+    syncOfflineUi();
     const cached = readEventsFromStorage();
     if (cached) {
       eventsCache = cached;
@@ -3087,6 +3121,7 @@ window.addEventListener('appinstalled', () => { banner.style.display = 'none'; }
 setupInfoTab();
 syncOfflineUi();
 window.addEventListener('online', () => {
+  eventsApiUnreachable = false;
   syncOfflineUi();
   loadEvents();
 });
