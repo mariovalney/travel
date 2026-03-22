@@ -1469,6 +1469,8 @@ let placeAutocomplete = null;
 let detailDirectionsRenderer = null;
 
 const HOTEL_COORDS = { lat: -34.5881959, lng: -58.4387735 };
+/** AEP — origem da rota do 1.º evento do dia 0 (Costanera Rafael Obligado). */
+const AIRPORT_AEP_COORDS = { lat: -34.5590184, lng: -58.41565109999999 };
 
 let appConfig = {
   mapsKey: null,
@@ -1905,8 +1907,13 @@ function renderDetailRoute(ev) {
 
   const sorted = [...eventsCache].sort(compareEventsChronological);
   const idx = sorted.findIndex(e => e._id === ev._id);
+  const day0Sorted = eventsCache.filter(e => e.day === 0).sort(compareEventsChronological);
+  const isFirstEventOfDay0 = ev.day === 0 && day0Sorted[0] && day0Sorted[0]._id === ev._id;
+
   let origin = { ...HOTEL_COORDS };
-  if (idx > 0) {
+  if (isFirstEventOfDay0) {
+    origin = { ...AIRPORT_AEP_COORDS };
+  } else if (idx > 0) {
     const prev = sorted[idx - 1];
     const plat = prev.location?.lat;
     const plng = prev.location?.lng;
@@ -1923,6 +1930,7 @@ function renderDetailRoute(ev) {
     wrap.classList.add('visible');
     const map = new google.maps.Map(mapEl, {
       zoom: 12,
+      maxZoom: 18,
       center: dest,
       mapTypeControl: false,
       streetViewControl: false,
@@ -2759,6 +2767,7 @@ async function refreshFriendsMap() {
   if (!friendsMapInstance) {
     friendsMapInstance = new google.maps.Map(el, {
       zoom: 13,
+      maxZoom: 18,
       center,
       mapTypeControl: false,
       streetViewControl: false,
