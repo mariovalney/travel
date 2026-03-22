@@ -855,7 +855,7 @@ footer {
         <div class="tl-card">
           <div class="tl-time">10h30</div>
           <div class="tl-title">Mercado NYI Express + Cuervo Café</div>
-          <div class="tl-desc">Primeiro café da viagem. A confirmar disponibilidade antes do dia.</div>
+          <div class="tl-desc">Primeiro café da viagem. Atividade a confirmar.</div>
           <div class="tl-tags"><span class="tag red">TBC</span><span class="tag">Café</span></div>
         </div>
       </div>
@@ -883,7 +883,7 @@ footer {
           <div class="tl-time">19h00</div>
           <div class="tl-title">Tango — Café Tortoni</div>
           <div class="tl-desc">Show de tango no café mais tradicional de Buenos Aires, fundado em 1858. Reserva obrigatória com antecedência.</div>
-          <div class="tl-tags"><span class="tag dark">Show</span><span class="tag">Reservar</span></div>
+          <div class="tl-tags"><span class="tag dark">Show</span><span class="tag red">Reservar</span></div>
         </div>
       </div>
     </div>
@@ -903,9 +903,9 @@ footer {
         <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
         <div class="tl-card">
           <div class="tl-time">Manhã</div>
-          <div class="tl-title">Teatro Colón</div>
-          <div class="tl-desc">Uma das maiores óperas do mundo. A visita guiada percorre o palco, os bastidores e as galerias históricas.</div>
-          <div class="tl-tags"><span class="tag">~1h30</span><span class="tag">Tour guiado</span></div>
+          <div class="tl-title">Manhã Livre</div>
+          <div class="tl-desc">Descanso, explorar o bairro, cafezinho no ritmo porteño.</div>
+          <div class="tl-tags"><span class="tag">Livre</span></div>
         </div>
       </div>
       <div class="tl-item">
@@ -923,7 +923,7 @@ footer {
           <div class="tl-time">Tarde — ~10 min de Uber</div>
           <div class="tl-title">Cemitério da Recoleta</div>
           <div class="tl-desc">Necrópole suntuosa com mausoléus históricos, incluindo o túmulo de Eva Perón. Tour de ~2 horas pelo labirinto de mármores.</div>
-          <div class="tl-tags"><span class="tag">~2h</span><span class="tag">Tour</span></div>
+          <div class="tl-tags"><span class="tag">~2h</span><span class="tag">Tour</span><span class="tag">Reservado</span></div>
         </div>
       </div>
       <div class="tl-item">
@@ -961,9 +961,9 @@ footer {
         <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
         <div class="tl-card">
           <div class="tl-time">Manhã</div>
-          <div class="tl-title">Manhã Livre</div>
-          <div class="tl-desc">Descanso, explorar o bairro, cafezinho no ritmo porteño.</div>
-          <div class="tl-tags"><span class="tag">Livre</span></div>
+          <div class="tl-title">Teatro Colón</div>
+          <div class="tl-desc">Uma das maiores óperas do mundo. A visita guiada percorre o palco, os bastidores e as galerias históricas.</div>
+          <div class="tl-tags"><span class="tag">~1h30</span><span class="tag">Tour guiado</span></div>
         </div>
       </div>
       <div class="tl-item">
@@ -991,6 +991,14 @@ footer {
           <div class="tl-title">Show — Ingrid & Diandra</div>
           <div class="tl-desc">Show confirmado para a noite. Local e horário a verificar.</div>
           <div class="tl-tags"><span class="tag dark">Show</span></div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-time">Noite</div>
+          <div class="tl-title">Livre — Mário e Luana</div>
+          <div class="tl-tags"><span class="tag">Livre</span></div>
         </div>
       </div>
     </div>
@@ -1062,6 +1070,7 @@ footer {
 <footer>
   <div>Buenos Aires &middot; Mar 2026 &middot; 4 dias</div>
   <div class="footer-script">é nois</div>
+  <div id="footer-user" style="font-size:8px;letter-spacing:1.5px;opacity:0.4;text-align:right"></div>
 </footer>
 
 <script>
@@ -1115,7 +1124,7 @@ const EVENTS = [
   { day: 0, time: new Date('2026-03-27T14:00:00-03:00'), label: 'Galerias Pacífico' },
   { day: 0, time: new Date('2026-03-27T20:00:00-03:00'), label: 'Trade Sky Rooftop' },
   { day: 0, time: new Date('2026-03-27T22:00:00-03:00'), label: 'Tango — Café Tortoni' },
-  { day: 1, time: new Date('2026-03-28T09:00:00-03:00'), label: 'Teatro Colón' },
+  { day: 2, time: new Date('2026-03-29T09:00:00-03:00'), label: 'Teatro Colón' },
   { day: 1, time: new Date('2026-03-28T12:00:00-03:00'), label: 'Confeitaria La Ideal' },
   { day: 1, time: new Date('2026-03-28T14:00:00-03:00'), label: 'Cemitério da Recoleta' },
   { day: 1, time: new Date('2026-03-28T16:00:00-03:00'), label: 'El Ateneo Grand Splendid' },
@@ -1226,6 +1235,15 @@ window.addEventListener('appinstalled', () => {
   banner.style.display = 'none';
   deferredPrompt = null;
 });
+
+// ── USER INFO ──
+fetch('/api/me').then(r => r.json()).then(u => {
+  const el = document.getElementById('footer-user');
+  if (el && u.name) {
+    const first = u.name.split(' ')[0];
+    el.innerHTML = `${first} &middot; <a href="/logout" style="color:inherit;text-decoration:underline">Sair</a>`;
+  }
+}).catch(() => {});
 </script>
 </body>
 </html>
