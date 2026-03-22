@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#3a8fd4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="BUE 2026">
+<meta name="description" content="Roteiro de viagem para Buenos Aires — Março 2026">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="./favicon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<title>Roteiro Buenos Aires</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Dancing+Script:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f7f8fa;
+  --white: #ffffff;
+  --black: #0d0d0d;
+  --blue: #3a8fd4;
+  --blue-light: #74acdf;
+  --blue-pale: #e8f2fb;
+  --text: #1a1a1a;
+  --muted: #7a8a99;
+  --border: #e2e8ef;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* INSTALL BANNER */
+#install-banner {
+  display: none;
+  position: fixed;
+  bottom: calc(16px + var(--safe-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  background: var(--black);
+  color: var(--white);
+  border-radius: 12px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  max-width: calc(100vw - 32px);
+  animation: slideUp 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes slideUpFull {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+#install-banner .banner-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+#install-banner .banner-text { flex: 1; }
+
+#install-banner .banner-title {
+  font-family: 'Anton', sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+#install-banner .banner-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+
+#install-banner .banner-btn {
+  background: var(--blue);
+  color: var(--white);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+
+#install-banner .banner-close {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.4);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 0 0 4px;
+  line-height: 1;
+}
+
+/* HERO */
+.hero {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 240px;
+  overflow: hidden;
+  padding-top: var(--safe-top);
+}
+
+.hero-left {
+  padding: 40px 32px 40px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  border-right: 1px solid var(--border);
+}
+
+.hero-left::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--blue);
+}
+
+.hero-eyebrow {
+  font-size: 9px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.hero-title-main {
+  font-family: 'Anton', sans-serif;
+  font-size: clamp(44px, 7vw, 76px);
+  text-transform: uppercase;
+  color: var(--black);
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.hero-title-script {
+  font-family: 'Dancing Script', cursive;
+  font-size: clamp(30px, 5vw, 52px);
+  color: var(--blue);
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.hero-meta {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+
+.hero-right {
+  background: var(--blue-pale);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 24px;
+}
+
+.hero-circle {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 3px solid var(--blue);
+  background: linear-gradient(135deg, var(--blue-light), var(--blue));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  flex-shrink: 0;
+  font-size: 26px;
+}
+
+.hero-circle:last-child {
+  width: 90px;
+  height: 90px;
+  margin-top: 28px;
+}
+
+.hero-circle-label {
+  font-family: 'Dancing Script', cursive;
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 4px;
+  opacity: 0.9;
+}
+
+/* STATUS BAR */
+.status-bar {
+  background: var(--blue);
+  color: var(--white);
+  padding: 11px 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* countdown mode */
+.status-bar .countdown-value {
+  font-family: 'Anton', sans-serif;
+  font-size: 20px;
+  letter-spacing: 1px;
+}
+
+.status-bar .sep { opacity: 0.4; }
+
+/* live events mode */
+.status-bar .events-grid {
+  display: flex;
+  gap: 0;
+  flex: 1;
+}
+
+.status-bar .event-block {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.status-bar .event-block + .event-block {
+  border-left: 1px solid rgba(255,255,255,0.2);
+  padding-left: 20px;
+  margin-left: 20px;
+}
+
+.status-bar .event-label {
+  font-size: 8px;
+  letter-spacing: 3px;
+  opacity: 0.6;
+}
+
+.status-bar .event-name {
+  font-family: 'Anton', sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-bar .event-time {
+  font-size: 9px;
+  letter-spacing: 1px;
+  opacity: 0.7;
+  margin-top: 1px;
+}
+
+/* status-bar mobile handled in main responsive block */
+
+/* TABS */
+.days-nav {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.day-tab {
+  flex: 1;
+  padding: 14px 8px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 500;
+  position: relative;
+  text-align: center;
+  transition: color 0.25s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.day-tab::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--blue);
+  transform: scaleX(0);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+.day-tab .tab-num {
+  display: block;
+  font-family: 'Anton', sans-serif;
+  font-size: 28px;
+  letter-spacing: 0;
+  line-height: 1;
+  margin-bottom: 2px;
+  color: inherit;
+}
+
+.day-tab.active { color: var(--blue); }
+.day-tab.active::after { transform: scaleX(1); }
+
+/* LAYOUT */
+.content {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 40px 24px calc(32px + var(--safe-bottom));
+}
+
+.day-panel { display: none; }
+.day-panel.active { display: block; animation: fadeUp 0.35s ease; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* DAY HEADER */
+.day-heading {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 32px;
+  padding-bottom: 18px;
+  border-bottom: 3px solid var(--black);
+}
+
+.day-num-big {
+  font-family: 'Anton', sans-serif;
+  font-size: clamp(64px, 12vw, 80px);
+  line-height: 1;
+  color: var(--black);
+}
+
+.day-date-label {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.day-subtitle {
+  font-family: 'Dancing Script', cursive;
+  font-size: clamp(22px, 5vw, 30px);
+  color: var(--blue);
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* FLIGHT CARD */
+.flight-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--blue);
+  border-radius: 6px;
+  padding: 20px 22px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.flight-time-block { text-align: center; }
+
+.flight-time {
+  font-family: 'Anton', sans-serif;
+  font-size: clamp(30px, 7vw, 40px);
+  line-height: 1;
+  color: var(--black);
+}
+
+.flight-iata {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.flight-middle {
+  flex: 1;
+  text-align: center;
+}
+
+.flight-line {
+  height: 1px;
+  background: var(--border);
+  position: relative;
+}
+
+.flight-line::before {
+  content: '✈';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--white);
+  padding: 0 8px;
+  font-size: 16px;
+  color: var(--blue);
+  line-height: 1;
+}
+
+.flight-duration {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+/* TIMELINE */
+.tl-item {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  margin-bottom: 4px;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeUp 0.35s ease forwards;
+}
+
+.tl-item:nth-child(1) { animation-delay: 0.05s; }
+.tl-item:nth-child(2) { animation-delay: 0.10s; }
+.tl-item:nth-child(3) { animation-delay: 0.15s; }
+.tl-item:nth-child(4) { animation-delay: 0.20s; }
+.tl-item:nth-child(5) { animation-delay: 0.25s; }
+.tl-item:nth-child(6) { animation-delay: 0.30s; }
+
+.tl-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 20px;
+}
+
+.tl-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 3px solid var(--blue);
+  flex-shrink: 0;
+  z-index: 1;
+  transition: background 0.2s;
+}
+
+.tl-item:active .tl-dot { background: var(--blue); }
+
+.tl-line {
+  flex: 1;
+  width: 2px;
+  background: var(--border);
+  margin-top: 4px;
+}
+
+.tl-item:last-child .tl-line { display: none; }
+
+.tl-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin: 8px 0 14px;
+  transition: box-shadow 0.2s, border-color 0.2s;
+  cursor: default;
+}
+
+.tl-time {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--blue);
+  font-weight: 500;
+  margin-bottom: 3px;
+}
+
+.tl-title {
+  font-family: 'Anton', sans-serif;
+  font-size: 17px;
+  text-transform: uppercase;
+  color: var(--black);
+  letter-spacing: 0.5px;
+  line-height: 1.15;
+  margin-bottom: 5px;
+}
+
+.tl-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.tl-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 9px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 2px 9px;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border-radius: 2px;
+  font-weight: 500;
+  background: var(--blue-pale);
+  color: var(--blue);
+  border: 1px solid rgba(58,143,212,0.2);
+}
+
+.tag.dark {
+  background: var(--black);
+  color: var(--white);
+  border-color: var(--black);
+}
+
+.tag.red {
+  background: #fff0f0;
+  color: #c94f4f;
+  border-color: rgba(201,79,79,0.2);
+}
+
+/* ALERT */
+.alert {
+  margin-top: 28px;
+  padding: 14px 18px;
+  background: #fff5f5;
+  border: 1px solid rgba(201,79,79,0.25);
+  border-left: 4px solid #c94f4f;
+  border-radius: 6px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: #7a2020;
+  line-height: 1.5;
+}
+
+/* ENDING */
+.ending {
+  text-align: center;
+  padding: 48px 0 16px;
+  border-top: 3px solid var(--black);
+  margin-top: 40px;
+}
+
+.ending-main {
+  font-family: 'Anton', sans-serif;
+  font-size: clamp(52px, 14vw, 72px);
+  text-transform: uppercase;
+  color: var(--black);
+  line-height: 1;
+}
+
+.ending-script {
+  font-family: 'Dancing Script', cursive;
+  font-size: 26px;
+  color: var(--blue);
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+/* FOOTER */
+footer {
+  background: var(--black);
+  color: rgba(255,255,255,0.4);
+  padding: 18px 40px calc(18px + var(--safe-bottom));
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.footer-script {
+  font-family: 'Dancing Script', cursive;
+  font-size: 18px;
+  color: var(--blue-light);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ── MOBILE ── */
+@media (max-width: 540px) {
+
+  /* HERO — compact strip */
+  .hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+  .hero-right { display: none; }
+  .hero-left {
+    padding: 24px 20px 20px;
+    border-right: none;
+    border-bottom: 3px solid var(--blue);
+    text-align: center;
+    align-items: center;
+  }
+  .hero-left::after { display: none; }
+  .hero-eyebrow { font-size: 8px; letter-spacing: 3px; }
+  .hero-title-main { font-size: 52px; }
+  .hero-title-script { font-size: 34px; }
+  .hero-meta { margin-top: 10px; font-size: 9px; gap: 6px; justify-content: center; }
+
+  /* STATUS BAR */
+  .status-bar { padding: 10px 16px; gap: 8px; }
+  .status-bar .event-name { font-size: 13px; }
+  .status-bar .event-block + .event-block {
+    padding-left: 14px;
+    margin-left: 14px;
+  }
+  .status-bar .countdown-value { font-size: 18px; }
+
+  /* TABS → move to bottom nav (app shell pattern) */
+  .days-nav {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    border-bottom: none;
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.07);
+    padding-bottom: var(--safe-bottom);
+  }
+  .day-tab {
+    padding: 10px 4px 8px;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+  }
+  .day-tab .tab-num { font-size: 22px; margin-bottom: 1px; }
+
+  /* indicator moves to top of the bottom bar */
+  .day-tab::after {
+    top: 0;
+    bottom: auto;
+  }
+
+  /* CONTENT — room for fixed bottom nav */
+  .content {
+    padding: 20px 14px calc(80px + var(--safe-bottom));
+  }
+
+  /* DAY HEADER */
+  .day-heading {
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    gap: 12px;
+  }
+  .day-num-big { font-size: 58px; }
+  .day-date-label { font-size: 8px; letter-spacing: 2.5px; }
+  .day-subtitle { font-size: 20px; }
+
+  /* FLIGHT CARD */
+  .flight-card {
+    padding: 14px 12px;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .flight-time { font-size: 30px; }
+  .flight-iata { font-size: 8px; letter-spacing: 1px; }
+  .flight-duration { font-size: 8px; letter-spacing: 1.5px; }
+
+  /* TIMELINE */
+  .tl-item { grid-template-columns: 34px 1fr; }
+  .tl-dot { width: 11px; height: 11px; }
+  .tl-card {
+    padding: 12px 14px;
+    margin: 6px 0 12px;
+    border-radius: 6px;
+  }
+  .tl-card:active { box-shadow: 0 2px 10px rgba(58,143,212,0.15); border-color: var(--blue-light); }
+  .tl-time { font-size: 8px; letter-spacing: 2px; }
+  .tl-title { font-size: 15px; }
+  .tl-desc { font-size: 12px; line-height: 1.6; }
+  .tl-tags { margin-top: 7px; gap: 4px; }
+  .tag { font-size: 7px; padding: 2px 7px; }
+
+  /* ALERT */
+  .alert { margin-top: 18px; font-size: 12px; padding: 12px 14px; }
+
+  /* ENDING */
+  .ending { padding: 32px 0 10px; margin-top: 28px; }
+  .ending-main { font-size: 52px; }
+  .ending-script { font-size: 21px; }
+
+  /* FOOTER */
+  footer {
+    padding: 12px 20px calc(12px + var(--safe-bottom));
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+    font-size: 8px;
+  }
+  .footer-script { font-size: 16px; }
+
+  /* INSTALL BANNER — full width, above bottom nav */
+  #install-banner {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: calc(56px + var(--safe-bottom));
+    transform: none !important;
+    max-width: 100% !important;
+    border-radius: 0;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+    animation-name: slideUpFull;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- INSTALL BANNER -->
+<div id="install-banner" style="display:none;">
+  <div class="banner-icon">✈</div>
+  <div class="banner-text">
+    <div class="banner-title">Adicionar à tela</div>
+    <div class="banner-sub">Funciona offline também</div>
+  </div>
+  <button class="banner-btn" id="install-btn">Instalar</button>
+  <button class="banner-close" id="install-close">✕</button>
+</div>
+
+<header class="hero">
+  <div class="hero-left">
+    <p class="hero-eyebrow">Roteiro de viagem &middot; Março 2026</p>
+    <div class="hero-title-main">Roteiro</div>
+    <div class="hero-title-script">Buenos Aires</div>
+    <div class="hero-meta">
+      <span>27 – 30 Mar</span>
+      <span>&middot;</span>
+      <span>4 dias</span>
+      <span>&middot;</span>
+      <span>GRU → AEP</span>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-circle">
+      <div>✈</div>
+      <div class="hero-circle-label">Partida</div>
+    </div>
+    <div class="hero-circle">
+      <div>🏛</div>
+      <div class="hero-circle-label">Buenos Aires</div>
+    </div>
+  </div>
+</header>
+
+<div class="status-bar" id="status-bar">
+  <!-- preenchido pelo JS -->
+</div>
+
+<nav class="days-nav">
+  <button class="day-tab active" onclick="setDay(0)">
+    <span class="tab-num">27</span>MAR
+  </button>
+  <button class="day-tab" onclick="setDay(1)">
+    <span class="tab-num">28</span>MAR
+  </button>
+  <button class="day-tab" onclick="setDay(2)">
+    <span class="tab-num">29</span>MAR
+  </button>
+  <button class="day-tab" onclick="setDay(3)">
+    <span class="tab-num">30</span>MAR
+  </button>
+</nav>
+
+<main class="content">
+
+  <!-- DIA 1 -->
+  <div class="day-panel active" id="day-0">
+    <div class="day-heading">
+      <div class="day-num-big">01</div>
+      <div>
+        <div class="day-date-label">Quinta-feira, 27 de março</div>
+        <div class="day-subtitle">Chegada & Centro</div>
+      </div>
+    </div>
+    <div class="flight-card">
+      <div class="flight-time-block">
+        <div class="flight-time">06:45</div>
+        <div class="flight-iata">GRU — São Paulo</div>
+      </div>
+      <div class="flight-middle">
+        <div class="flight-line"></div>
+        <div class="flight-duration">Voo direto</div>
+      </div>
+      <div class="flight-time-block">
+        <div class="flight-time">09:40</div>
+        <div class="flight-iata">AEP — Buenos Aires</div>
+      </div>
+    </div>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-time">~10h00</div>
+          <div class="tl-title">Chegada & Check-in</div>
+          <div class="tl-desc">Deslocamento de ~40 minutos do aeroporto AEP até o Airbnb. Check-in e organização das malas.</div>
+          <div class="tl-tags"><span class="tag">Airbnb</span><span class="tag">~40 min</span></div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-time">10h30</div>
+          <div class="tl-title">Mercado NYI Express + Cuervo Café</div>
+          <div class="tl-desc">Primeiro café da viagem. A confirmar disponibilidade antes do dia.</div>
+          <div class="tl-tags"><span class="tag red">TBC</span><span class="tag">Café</span></div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-time">Tarde</div>
+          <div class="tl-title">Galerias Pacífico</div>
+          <div class="tl-desc">Shopping histórico no centro com afrescos no teto e arquitetura belíssima. Compras e passeio cultural.</div>
+          <div class="tl-tags"><span class="tag">Compras</span><span class="tag">Centro</span></div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-time">Jantar</div>
+          <div class="tl-title">Trade Sky Rooftop</div>
+          <div class="tl-desc">Jantar com vista panorâmica do centro de Buenos Aires.</div>
+          <div class="tl-tags"><span class="tag dark">Restaurante</span></div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-time">19h00</div>
+          <div class="tl-title">Tango — Café Tortoni</div>
+          <div class="tl-desc">Show de tango no café mais tradicional de Buenos Aires, fundado em 1858. Reserva obrigatória com antecedência.</div>
+          <div class="tl-tags"><span class="tag dark">Show</span><span class="tag">Reservar</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIA 2 -->
+  <div class="day-panel" id="day-1">
+    <div class="day-heading">
+      <div class="day-num-big">02</div>
+      <div>
+        <div class="day-date-label">Sexta-feira, 28 de março</div>
+        <div class="day-subtitle">Cultura & Recoleta</div>
+      </div>
+    </div>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-time">Manhã</div>
+          <div class="tl-title">Teatro Colón</div>
+          <div class="tl-desc">Uma das maiores óperas do mundo. A visita guiada percorre o palco, os bastidores e as galerias históricas.</div>
+          <div class="tl-tags"><span class="tag">~1h30</span><span class="tag">Tour guiado</span></div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-time">Almoço</div>
+          <div class="tl-title">Confeitaria La Ideal</div>
+          <div class="tl-desc">Clássico porteño com ambiente belle époque. Café tardio ou almoço leve antes de seguir para a Recoleta.</div>
+          <div class="tl-tags"><span class="tag">Café & Almoço</span></div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-time">Tarde — ~10 min de Uber</div>
+          <div class="tl-title">Cemitério da Recoleta</div>
+          <div class="tl-desc">Necrópole suntuosa com mausoléus históricos, incluindo o túmulo de Eva Perón. Tour de ~2 horas pelo labirinto de mármores.</div>
+          <div class="tl-tags"><span class="tag">~2h</span><span class="tag">Tour</span></div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-time">~16h — 16 min a pé</div>
+          <div class="tl-title">El Ateneo Grand Splendid</div>
+          <div class="tl-desc">Considerada uma das livrarias mais belas do mundo, instalada em um antigo teatro de 1919 com palco e camarotes repletos de livros.</div>
+          <div class="tl-tags"><span class="tag dark">Imperdível</span><span class="tag">Livros</span></div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-time">Noite</div>
+          <div class="tl-title">Jantar — Lugar Secreto</div>
+          <div class="tl-desc">Destino reservado. A revelar no dia.</div>
+          <div class="tl-tags"><span class="tag">Surprise</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIA 3 -->
+  <div class="day-panel" id="day-2">
+    <div class="day-heading">
+      <div class="day-num-big">03</div>
+      <div>
+        <div class="day-date-label">Sábado, 29 de março</div>
+        <div class="day-subtitle">Dia Leve & Show</div>
+      </div>
+    </div>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-time">Manhã</div>
+          <div class="tl-title">Manhã Livre</div>
+          <div class="tl-desc">Descanso, explorar o bairro, cafezinho no ritmo porteño.</div>
+          <div class="tl-tags"><span class="tag">Livre</span></div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-time">Almoço</div>
+          <div class="tl-title">Almoço Livre</div>
+          <div class="tl-desc">Escolha espontânea. San Telmo tem opções para todos os gostos.</div>
+          <div class="tl-tags"><span class="tag">Livre</span></div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-time">Tarde</div>
+          <div class="tl-title">Mercado San Telmo</div>
+          <div class="tl-desc">Mercado coberto de 1897 com antiguidades, gastronomia e artesanato. O astral boho único de San Telmo.</div>
+          <div class="tl-tags"><span class="tag">Mercado</span><span class="tag">San Telmo</span></div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-time">Noite</div>
+          <div class="tl-title">Show — Ingrid & Diandra</div>
+          <div class="tl-desc">Show confirmado para a noite. Local e horário a verificar.</div>
+          <div class="tl-tags"><span class="tag dark">Show</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="alert">
+      <span style="font-size:17px;flex-shrink:0;">⚠</span>
+      <div><strong>Lembrete:</strong> VERIFICAR KART! Confirmar reserva ou disponibilidade antes do dia 29.</div>
+    </div>
+  </div>
+
+  <!-- DIA 4 -->
+  <div class="day-panel" id="day-3">
+    <div class="day-heading">
+      <div class="day-num-big">04</div>
+      <div>
+        <div class="day-date-label">Domingo, 30 de março</div>
+        <div class="day-subtitle">Retorno a Casa</div>
+      </div>
+    </div>
+    <div class="flight-card">
+      <div class="flight-time-block">
+        <div class="flight-time">12:55</div>
+        <div class="flight-iata">AEP — Buenos Aires</div>
+      </div>
+      <div class="flight-middle">
+        <div class="flight-line"></div>
+        <div class="flight-duration">~2h40 de voo</div>
+      </div>
+      <div class="flight-time-block">
+        <div class="flight-time">15:35</div>
+        <div class="flight-iata">GRU — São Paulo</div>
+      </div>
+    </div>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-time">Manhã</div>
+          <div class="tl-title">Últimas Horas em BUE</div>
+          <div class="tl-desc">Arrumar as malas, último café porteño e guardar as memórias.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-time">~10h00</div>
+          <div class="tl-title">Saída para o Aeroporto</div>
+          <div class="tl-desc">~40 minutos de deslocamento até o AEP. Check-in e embarque com calma.</div>
+          <div class="tl-tags"><span class="tag">AEP</span><span class="tag">~40 min</span></div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+        <div class="tl-card">
+          <div class="tl-time">12h55</div>
+          <div class="tl-title">Voo de Retorno</div>
+          <div class="tl-desc">Buenos Aires → São Paulo. Chegada prevista às 15h35 no Aeroporto de Guarulhos.</div>
+          <div class="tl-tags"><span class="tag dark">~2h40</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="ending">
+      <div class="ending-main">É Nois</div>
+      <div class="ending-script">valeu valeu</div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div>Buenos Aires &middot; Mar 2026 &middot; 4 dias</div>
+  <div class="footer-script">é nois</div>
+</footer>
+
+<script>
+// ── TABS ──
+const tabs = document.querySelectorAll('.day-tab');
+const panels = document.querySelectorAll('.day-panel');
+
+function setDay(idx) {
+  tabs.forEach((t, i) => t.classList.toggle('active', i === idx));
+  panels.forEach((p, i) => {
+    if (i === idx) {
+      p.classList.add('active');
+      p.querySelectorAll('.tl-item').forEach(item => {
+        item.style.animation = 'none';
+        item.offsetHeight;
+        item.style.animation = '';
+      });
+    } else {
+      p.classList.remove('active');
+    }
+  });
+  // Persist tab across sessions
+  localStorage.setItem('bue-day', idx);
+}
+
+// ── TAB INIT: data atual primeiro, localStorage como fallback ──
+const TRIP_DAYS = [
+  new Date('2026-03-27T00:00:00-03:00'),
+  new Date('2026-03-28T00:00:00-03:00'),
+  new Date('2026-03-29T00:00:00-03:00'),
+  new Date('2026-03-30T00:00:00-03:00'),
+];
+
+function smartDay() {
+  const now = new Date();
+  const departure = TRIP_DAYS[0];
+  if (now < departure) return 0; // antes da viagem: sempre dia 1
+  for (let i = TRIP_DAYS.length - 1; i >= 0; i--) {
+    if (now >= TRIP_DAYS[i]) return i;
+  }
+  return 0;
+}
+
+const savedDay = localStorage.getItem('bue-day');
+setDay(savedDay !== null ? Number(savedDay) : smartDay());
+
+// ── STATUS BAR: countdown antes / eventos durante ──
+const EVENTS = [
+  { day: 0, time: new Date('2026-03-27T10:00:00-03:00'), label: 'Chegada & Check-in' },
+  { day: 0, time: new Date('2026-03-27T10:30:00-03:00'), label: 'Mercado NYI + Cuervo Café' },
+  { day: 0, time: new Date('2026-03-27T14:00:00-03:00'), label: 'Galerias Pacífico' },
+  { day: 0, time: new Date('2026-03-27T20:00:00-03:00'), label: 'Trade Sky Rooftop' },
+  { day: 0, time: new Date('2026-03-27T22:00:00-03:00'), label: 'Tango — Café Tortoni' },
+  { day: 1, time: new Date('2026-03-28T09:00:00-03:00'), label: 'Teatro Colón' },
+  { day: 1, time: new Date('2026-03-28T12:00:00-03:00'), label: 'Confeitaria La Ideal' },
+  { day: 1, time: new Date('2026-03-28T14:00:00-03:00'), label: 'Cemitério da Recoleta' },
+  { day: 1, time: new Date('2026-03-28T16:00:00-03:00'), label: 'El Ateneo Grand Splendid' },
+  { day: 1, time: new Date('2026-03-28T20:00:00-03:00'), label: 'Jantar — Lugar Secreto' },
+  { day: 2, time: new Date('2026-03-29T14:00:00-03:00'), label: 'Mercado San Telmo' },
+  { day: 2, time: new Date('2026-03-29T21:00:00-03:00'), label: 'Show — Ingrid & Diandra' },
+  { day: 3, time: new Date('2026-03-30T10:00:00-03:00'), label: 'Saída para o Aeroporto' },
+  { day: 3, time: new Date('2026-03-30T12:55:00-03:00'), label: 'Voo de Retorno' },
+];
+
+function fmtTime(d) {
+  return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+}
+
+function eventBlock(label, name, time) {
+  return `<div class="event-block">
+    <div class="event-label">${label}</div>
+    <div class="event-name">${name}</div>
+    <div class="event-time">${time}</div>
+  </div>`;
+}
+
+function updateBar() {
+  const bar = document.getElementById('status-bar');
+  const now = new Date();
+  const departure = new Date('2026-03-27T06:45:00-03:00');
+  const tripEnd = new Date('2026-03-30T15:35:00-03:00');
+
+  // Antes da partida: countdown
+  if (now < departure) {
+    const diff = departure - now;
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins = Math.floor((diff % 3600000) / 60000);
+    const val = days > 0
+      ? days + (days === 1 ? ' dia' : ' dias')
+      : hours + 'h ' + String(mins).padStart(2, '0') + 'min';
+    bar.innerHTML = `<span>Partindo em</span>
+      <span class="countdown-value">${val}</span>
+      <span class="sep">—</span>
+      <span>27 Mar, 06:45</span>`;
+    return;
+  }
+
+  // Após retorno: oculta a barra
+  if (now > tripEnd) {
+    bar.style.display = 'none';
+    return;
+  }
+
+  // Durante a viagem: evento atual e próximo
+  let current = null;
+  let next = null;
+
+  for (let i = 0; i < EVENTS.length; i++) {
+    if (EVENTS[i].time <= now) {
+      current = EVENTS[i];
+    } else if (!next) {
+      next = EVENTS[i];
+      break;
+    }
+  }
+
+  const currentHtml = current
+    ? eventBlock('Evento atual', current.label, fmtTime(current.time))
+    : eventBlock('Evento atual', 'Dia livre', '—');
+
+  const nextHtml = next
+    ? eventBlock('Próximo evento', next.label, fmtTime(next.time))
+    : eventBlock('Próximo evento', 'Fim da viagem', '—');
+
+  bar.innerHTML = `<div class="events-grid">${currentHtml}${nextHtml}</div>`;
+}
+
+updateBar();
+setInterval(updateBar, 60000);
+
+// ── SERVICE WORKER ──
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+// ── INSTALL PROMPT ──
+let deferredPrompt = null;
+const banner = document.getElementById('install-banner');
+const installBtn = document.getElementById('install-btn');
+const closeBtn = document.getElementById('install-close');
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  banner.style.display = 'flex';
+});
+
+installBtn.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  banner.style.display = 'none';
+});
+
+closeBtn.addEventListener('click', () => {
+  banner.style.display = 'none';
+});
+
+window.addEventListener('appinstalled', () => {
+  banner.style.display = 'none';
+  deferredPrompt = null;
+});
+</script>
+</body>
+</html>
