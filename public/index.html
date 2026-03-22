@@ -1188,9 +1188,39 @@ footer {
   .push-banner { top: auto; bottom: calc(58px + var(--safe-bottom) + 8px); right: 8px; left: 8px; max-width: 100%; }
   .md-title { font-size: 22px; }
 }
+.offline-bar {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 600;
+  background: #b71c1c;
+  color: #fff;
+  text-align: center;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  padding-top: calc(10px + env(safe-area-inset-top, 0px));
+  box-sizing: border-box;
+}
+body.app-offline {
+  padding-top: 42px;
+}
+body.app-offline .offline-bar { display: block; }
+@media (min-width: 541px) {
+  body.app-offline { padding-top: 38px; }
+}
+body.app-offline .btn-add-wrap,
+body.app-offline .btn-edit-trigger,
+body.app-offline #btn-remove-event {
+  display: none !important;
+}
 </style>
 </head>
 <body>
+
+<div id="offline-bar" class="offline-bar" role="status">Sem ligação à internet</div>
 
 <!-- INSTALL BANNER -->
 <div id="install-banner" style="display:none;">
@@ -1457,6 +1487,58 @@ footer {
 <script>
 // ── State ────────────────────────────────────────────────────
 let eventsCache = [];
+const LS_EVENTS_KEY = 'bue-events-v1';
+const LS_FX_KEY = 'bue-fx-v1';
+
+function persistEventsToStorage() {
+  try {
+    localStorage.setItem(LS_EVENTS_KEY, JSON.stringify(eventsCache));
+  } catch (_) { /* quota / private mode */ }
+}
+
+function readEventsFromStorage() {
+  try {
+    const raw = localStorage.getItem(LS_EVENTS_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function persistFxToStorage(payload) {
+  try {
+    localStorage.setItem(LS_FX_KEY, JSON.stringify({
+      rate: payload.rate,
+      quotedAt: payload.quotedAt ?? null,
+      cachedAt: Date.now(),
+    }));
+  } catch (_) {}
+}
+
+function readFxFromStorage() {
+  try {
+    const raw = localStorage.getItem(LS_FX_KEY);
+    if (!raw) return null;
+    const o = JSON.parse(raw);
+    if (o == null || typeof o !== 'object') return null;
+    const rate = Number(o.rate);
+    if (!Number.isFinite(rate)) return null;
+    return { rate, quotedAt: o.quotedAt ?? null };
+  } catch {
+    return null;
+  }
+}
+
+function syncOfflineUi() {
+  const offline = !navigator.onLine;
+  document.body.classList.toggle('app-offline', offline);
+  if (offline && document.getElementById('modal-edit')?.classList.contains('open')) {
+    closeEditModalOnly();
+  }
+}
+
 let currentEventId = null;
 let currentDay = null;
 let editTags = [];
@@ -1827,7 +1909,11 @@ setInterval(updateBar, 60000);
 // ── Events API ───────────────────────────────────────────────
 async function loadEvents() {
   try {
-    eventsCache = await fetch('/api/events').then(r => r.json());
+    const res = await fetch('/api/events');
+    const data = await res.json();
+    if (!res.ok || !Array.isArray(data)) throw new Error('events bad response');
+    eventsCache = data;
+    persistEventsToStorage();
     renderAllTimelines();
     updateBar();
     if (!routeInitialized) {
@@ -1836,6 +1922,16 @@ async function loadEvents() {
     }
   } catch (err) {
     console.error('loadEvents error', err);
+    const cached = readEventsFromStorage();
+    if (cached) {
+      eventsCache = cached;
+      renderAllTimelines();
+      updateBar();
+      if (!routeInitialized) {
+        applyRouteFromUrl({ initial: true });
+        routeInitialized = true;
+      }
+    }
   }
 }
 
@@ -2124,6 +2220,7 @@ function mergeEventIntoCache(updated) {
   } else {
     eventsCache.push(updated);
   }
+  persistEventsToStorage();
 }
 
 async function uploadPendingPhotosIfAny() {
@@ -2361,8 +2458,13 @@ async function deletePhoto(filename) {
   if (!confirm('Remover esta foto?')) return;
   try {
     const res = await fetch(`/api/events/${currentEventId}/photos/${filename}`, { method: 'DELETE' });
+    if (!res.ok) {
+      showToast('Erro ao remover foto', { type: 'error' });
+      return;
+    }
     const updated = await res.json();
     eventsCache = eventsCache.map(e => e._id === currentEventId ? updated : e);
+    persistEventsToStorage();
     renderAllTimelines();
     renderEditPhotos(updated.photos || []);
     showToast('Foto removida', { type: 'success' });
@@ -2435,6 +2537,7 @@ async function removeCurrentEvent() {
       return;
     }
     eventsCache = eventsCache.filter(e => e._id !== id);
+    persistEventsToStorage();
     currentEventId = null;
     closeEditModalOnly();
     closeDetailUI();
@@ -2849,23 +2952,46 @@ async function loadArsBrlRate() {
   if (meta) meta.textContent = '';
   fxArsBrlRate = null;
   if (out) out.textContent = '—';
+
+  function applyCachedFx() {
+    const c = readFxFromStorage();
+    if (!c) return false;
+    fxArsBrlRate = c.rate;
+    if (meta && c.quotedAt) meta.textContent = `Cotação: ${c.quotedAt}`;
+    updateCalcBrlOutput();
+    if (errEl) {
+      errEl.style.display = 'none';
+      errEl.textContent = '';
+    }
+    return true;
+  }
+
   try {
     const res = await fetch('/api/fx/ars-brl');
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      if (errEl) {
+      if (!applyCachedFx() && errEl) {
         errEl.textContent = data.error || 'Cotação indisponível';
         errEl.style.display = 'block';
       }
       return;
     }
-    fxArsBrlRate = data.rate;
+    const rate = Number(data.rate);
+    if (!Number.isFinite(rate)) {
+      if (!applyCachedFx() && errEl) {
+        errEl.textContent = 'Cotação indisponível';
+        errEl.style.display = 'block';
+      }
+      return;
+    }
+    fxArsBrlRate = rate;
+    persistFxToStorage({ rate, quotedAt: data.quotedAt });
     if (meta && data.quotedAt) {
       meta.textContent = `Cotação: ${data.quotedAt}`;
     }
     updateCalcBrlOutput();
   } catch {
-    if (errEl) {
+    if (!applyCachedFx() && errEl) {
       errEl.textContent = 'Cotação indisponível';
       errEl.style.display = 'block';
     }
@@ -2959,6 +3085,12 @@ window.addEventListener('appinstalled', () => { banner.style.display = 'none'; }
 
 // ── Init ─────────────────────────────────────────────────────
 setupInfoTab();
+syncOfflineUi();
+window.addEventListener('online', () => {
+  syncOfflineUi();
+  loadEvents();
+});
+window.addEventListener('offline', syncOfflineUi);
 fetchAppConfig().then(() => {
   loadEvents();
   initPush();

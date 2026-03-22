@@ -1,4 +1,4 @@
-const CACHE = 'bue-2026-v31';
+const CACHE = 'bue-2026-v32';
 const ASSETS = [
   './index.html',
   './manifest.json',
