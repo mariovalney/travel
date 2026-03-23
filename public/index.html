@@ -1719,6 +1719,106 @@ function closeAllModalsSilently() {
   document.body.style.overflow = '';
 }
 
+let fxArsBrlRate = null;
+
+function roundMoney2(n) {
+  return Math.round(Number(n) * 100) / 100;
+}
+
+function updateCalcBrlOutput() {
+  const input = document.getElementById('calc-ars-input');
+  const out = document.getElementById('calc-brl-out');
+  if (!input || !out) return;
+  if (fxArsBrlRate == null || !Number.isFinite(fxArsBrlRate)) {
+    out.textContent = '—';
+    return;
+  }
+  const raw = String(input.value ?? '').trim();
+  if (raw === '') {
+    out.textContent = '—';
+    return;
+  }
+  const ars = parseFloat(raw.replace(',', '.'));
+  if (!Number.isFinite(ars) || ars < 0) {
+    out.textContent = '—';
+    return;
+  }
+  const brl = roundMoney2(ars * fxArsBrlRate);
+  const perPerson = roundMoney2(brl / 4);
+  const main = brl.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  const perStr = perPerson.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  out.innerHTML = `${main}<span class="info-calc-brl-per"> (${perStr} por pessoa)</span>`;
+}
+
+const DEFAULT_CALC_ARS = 10000;
+
+async function loadArsBrlRate() {
+  const input = document.getElementById('calc-ars-input');
+  const meta = document.getElementById('calc-fx-meta');
+  const errEl = document.getElementById('calc-fx-error');
+  const out = document.getElementById('calc-brl-out');
+  if (input) input.value = String(DEFAULT_CALC_ARS);
+  if (errEl) {
+    errEl.style.display = 'none';
+    errEl.textContent = '';
+  }
+  if (meta) meta.textContent = '';
+  fxArsBrlRate = null;
+  if (out) out.textContent = '—';
+
+  function applyCachedFx() {
+    const c = readFxFromStorage();
+    if (!c) return false;
+    fxArsBrlRate = c.rate;
+    if (meta && c.quotedAt) meta.textContent = `Cotação: ${c.quotedAt}`;
+    updateCalcBrlOutput();
+    if (errEl) {
+      errEl.style.display = 'none';
+      errEl.textContent = '';
+    }
+    return true;
+  }
+
+  try {
+    const res = await fetch('/api/fx/ars-brl');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      if (!applyCachedFx() && errEl) {
+        errEl.textContent = data.error || 'Cotação indisponível';
+        errEl.style.display = 'block';
+      }
+      return;
+    }
+    const rate = Number(data.rate);
+    if (!Number.isFinite(rate)) {
+      if (!applyCachedFx() && errEl) {
+        errEl.textContent = 'Cotação indisponível';
+        errEl.style.display = 'block';
+      }
+      return;
+    }
+    fxArsBrlRate = rate;
+    persistFxToStorage({ rate, quotedAt: data.quotedAt });
+    if (meta && data.quotedAt) {
+      meta.textContent = `Cotação: ${data.quotedAt}`;
+    }
+    updateCalcBrlOutput();
+  } catch {
+    if (!applyCachedFx() && errEl) {
+      errEl.textContent = 'Cotação indisponível';
+      errEl.style.display = 'block';
+    }
+  }
+}
+
 function setDay(idx, _opts = {}) {
   if (idx < 0 || idx > 4) idx = 0;
   lastSetDayIdx = idx;
@@ -2930,106 +3030,6 @@ async function refreshFriendsMap() {
   });
   fitFriendsAllPositions(positions, center);
   renderFriendsFocusButtons(data, positions, center);
-}
-
-let fxArsBrlRate = null;
-
-function roundMoney2(n) {
-  return Math.round(Number(n) * 100) / 100;
-}
-
-function updateCalcBrlOutput() {
-  const input = document.getElementById('calc-ars-input');
-  const out = document.getElementById('calc-brl-out');
-  if (!input || !out) return;
-  if (fxArsBrlRate == null || !Number.isFinite(fxArsBrlRate)) {
-    out.textContent = '—';
-    return;
-  }
-  const raw = String(input.value ?? '').trim();
-  if (raw === '') {
-    out.textContent = '—';
-    return;
-  }
-  const ars = parseFloat(raw.replace(',', '.'));
-  if (!Number.isFinite(ars) || ars < 0) {
-    out.textContent = '—';
-    return;
-  }
-  const brl = roundMoney2(ars * fxArsBrlRate);
-  const perPerson = roundMoney2(brl / 4);
-  const main = brl.toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-  const perStr = perPerson.toLocaleString('pt-BR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-  out.innerHTML = `${main}<span class="info-calc-brl-per"> (${perStr} por pessoa)</span>`;
-}
-
-const DEFAULT_CALC_ARS = 10000;
-
-async function loadArsBrlRate() {
-  const input = document.getElementById('calc-ars-input');
-  const meta = document.getElementById('calc-fx-meta');
-  const errEl = document.getElementById('calc-fx-error');
-  const out = document.getElementById('calc-brl-out');
-  if (input) input.value = String(DEFAULT_CALC_ARS);
-  if (errEl) {
-    errEl.style.display = 'none';
-    errEl.textContent = '';
-  }
-  if (meta) meta.textContent = '';
-  fxArsBrlRate = null;
-  if (out) out.textContent = '—';
-
-  function applyCachedFx() {
-    const c = readFxFromStorage();
-    if (!c) return false;
-    fxArsBrlRate = c.rate;
-    if (meta && c.quotedAt) meta.textContent = `Cotação: ${c.quotedAt}`;
-    updateCalcBrlOutput();
-    if (errEl) {
-      errEl.style.display = 'none';
-      errEl.textContent = '';
-    }
-    return true;
-  }
-
-  try {
-    const res = await fetch('/api/fx/ars-brl');
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      if (!applyCachedFx() && errEl) {
-        errEl.textContent = data.error || 'Cotação indisponível';
-        errEl.style.display = 'block';
-      }
-      return;
-    }
-    const rate = Number(data.rate);
-    if (!Number.isFinite(rate)) {
-      if (!applyCachedFx() && errEl) {
-        errEl.textContent = 'Cotação indisponível';
-        errEl.style.display = 'block';
-      }
-      return;
-    }
-    fxArsBrlRate = rate;
-    persistFxToStorage({ rate, quotedAt: data.quotedAt });
-    if (meta && data.quotedAt) {
-      meta.textContent = `Cotação: ${data.quotedAt}`;
-    }
-    updateCalcBrlOutput();
-  } catch {
-    if (!applyCachedFx() && errEl) {
-      errEl.textContent = 'Cotação indisponível';
-      errEl.style.display = 'block';
-    }
-  }
 }
 
 function setupInfoTab() {
