@@ -3089,8 +3089,43 @@ async function initPush() {
 }
 
 // ── Service Worker ───────────────────────────────────────────
+// Procura nova versão ao abrir, ao voltar à aba e a cada hora. Recarrega só quando uma
+// nova versão do SW realmente assume controle (evita reload na primeira instalação).
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
+  (async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('./sw.js');
+      let pendingReload = false;
+
+      const trackInstalling = (w) => {
+        w.addEventListener('statechange', () => {
+          if (w.state === 'installed' && navigator.serviceWorker.controller) {
+            pendingReload = true;
+          }
+        });
+      };
+
+      if (navigator.serviceWorker.controller && reg.waiting) pendingReload = true;
+      if (reg.installing) trackInstalling(reg.installing);
+      reg.addEventListener('updatefound', () => {
+        const w = reg.installing;
+        if (w) trackInstalling(w);
+      });
+
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!pendingReload) return;
+        pendingReload = false;
+        window.location.reload();
+      });
+
+      const pingUpdate = () => { reg.update().catch(() => {}); };
+      setInterval(pingUpdate, 60 * 60 * 1000);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') pingUpdate();
+      });
+      pingUpdate();
+    } catch (_) {}
+  })();
 }
 
 // ── Install Prompt (mobile only) ─────────────────────────────
