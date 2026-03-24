@@ -1133,6 +1133,8 @@ footer {
   border-radius: 6px;
   font-size: 12px;
   letter-spacing: 0.5px;
+  width: 100%;
+  text-align: left;
 }
 #info-friends-map {
   width: 100%;
@@ -2350,14 +2352,11 @@ function openDetail(id, opts = {}) {
       const { diskName, displayName } = normalizeEventFile(f);
       const row = document.createElement('div');
       row.className = 'md-file-item';
-      const name = document.createElement('span');
-      name.textContent = displayName;
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'btn-file-download';
-      btn.textContent = 'Download';
+      btn.textContent = displayName;
       btn.onclick = () => triggerFileDownload(diskName, displayName);
-      row.appendChild(name);
       row.appendChild(btn);
       filesWrap.appendChild(row);
     });
