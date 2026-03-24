@@ -1,0 +1,10 @@
+---
+description: Always bump service worker cache version after PWA asset changes
+alwaysApply: true
+---
+
+# PWA cache bump rule
+
+- If you edit PWA-served assets (`public/index.html`, `public/sw.js`, manifest, icons, CSS, JS), you must increment `CACHE` in `public/sw.js`.
+- Keep the version monotonic (`v41` -> `v42` -> `v43`).
+- Mention the cache bump explicitly in your final summary so it is visible in review.
