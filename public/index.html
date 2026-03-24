@@ -2355,7 +2355,7 @@ function openDetail(id, opts = {}) {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'btn-file-download';
-      btn.textContent = displayName;
+      btn.textContent = displayName.replace(/\.[^.]+$/, '');
       btn.onclick = () => triggerFileDownload(diskName, displayName);
       row.appendChild(btn);
       filesWrap.appendChild(row);
