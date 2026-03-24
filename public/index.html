@@ -1122,6 +1122,18 @@ footer {
   font-size: 12px;
   letter-spacing: 0.5px;
 }
+.btn-file-download {
+  display: inline-block;
+  background: var(--black);
+  color: var(--white);
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
 #info-friends-map {
   width: 100%;
   height: 260px;
@@ -2342,7 +2354,7 @@ function openDetail(id, opts = {}) {
       name.textContent = displayName;
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'btn-tag';
+      btn.className = 'btn-file-download';
       btn.textContent = 'Download';
       btn.onclick = () => triggerFileDownload(diskName, displayName);
       row.appendChild(name);
@@ -2801,18 +2813,12 @@ function renderEditFiles(savedFiles) {
     const nameSpan = document.createElement('span');
     nameSpan.className = 'edit-file-name';
     nameSpan.textContent = displayName;
-    const downloadBtn = document.createElement('button');
-    downloadBtn.type = 'button';
-    downloadBtn.className = 'btn-tag';
-    downloadBtn.textContent = 'Download';
-    downloadBtn.onclick = () => triggerFileDownload(diskName, displayName);
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'delete-photo-btn';
     btn.textContent = '×';
     btn.onclick = () => deleteEventFile(diskName);
     row.appendChild(nameSpan);
-    row.appendChild(downloadBtn);
     row.appendChild(btn);
     c.appendChild(row);
   });
@@ -2829,8 +2835,10 @@ function renderEditFiles(savedFiles) {
 
 async function handleAttachmentSelect(input) {
   pendingFiles = Array.from(input.files || []).map((f) => {
-    const customName = prompt('Nome para o arquivo:', f.name);
-    const finalName = (customName && customName.trim()) ? customName.trim() : f.name;
+    const ext = f.name.includes('.') ? f.name.slice(f.name.lastIndexOf('.')) : '';
+    const baseName = ext ? f.name.slice(0, f.name.lastIndexOf('.')) : f.name;
+    const customName = prompt('Nome para o arquivo:', baseName);
+    const finalName = ((customName && customName.trim()) ? customName.trim() : baseName) + ext;
     return new File([f], finalName, { type: f.type, lastModified: f.lastModified });
   });
   renderEditFiles(getCurrentEditFiles());
