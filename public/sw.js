@@ -1,15 +1,15 @@
 // IMPORTANTE: sempre que mudar arquivos do PWA (index, css/js, manifest, icones, sw),
 // incremente a versao do CACHE para forcar clientes instalados a receberem update.
-const CACHE = 'bue-2026-v42';
+const CACHE = 'bue-2026-v43';
 const ASSETS = [
-  './index.html',
-  './manifest.json',
+  '/index.html',
+  '/manifest.json',
   '/favicon.ico',
   '/favicon-32x32.png',
   '/favicon-16x16.png',
-  './apple-touch-icon.png',
-  './android-chrome-192x192.png',
-  './android-chrome-512x512.png',
+  '/apple-touch-icon.png',
+  '/android-chrome-192x192.png',
+  '/android-chrome-512x512.png',
   'https://fonts.googleapis.com/css2?family=Anton&family=Dancing+Script:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap'
 ];
 
