@@ -634,6 +634,10 @@ footer {
 .md-location a { color: var(--blue); text-decoration: none; }
 .md-duration { font-size: 12px; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.5px; }
 .md-desc { font-size: 14px; color: var(--text); line-height: 1.65; margin-bottom: 16px; }
+.md-link { font-size: 14px; margin-bottom: 14px; word-break: break-all; display: none; }
+.md-link.has-link { display: block; }
+.md-link a { color: var(--blue); text-decoration: none; }
+.md-link a:hover { text-decoration: underline; }
 .md-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
 .md-gallery-empty {
   font-size: 13px;
@@ -676,6 +680,60 @@ footer {
   gap: 10px;
   margin: 0 0 16px;
 }
+
+.md-files-heading {
+  font-family: 'Anton', sans-serif;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--black);
+  margin: 20px 0 10px;
+  font-weight: normal;
+}
+
+.md-files {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.md-file-item {
+  font-size: 14px;
+  color: var(--blue);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.md-file-item:hover { text-decoration: underline; }
+
+.edit-files-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.edit-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  background: rgba(0,0,0,0.04);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.edit-file-item .edit-file-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.edit-file-item .edit-file-name a { color: var(--blue); text-decoration: none; }
+
 .gallery-photo {
   width: 100%;
   height: auto;
@@ -1421,6 +1479,7 @@ body.app-offline .lightbox {
     <div class="md-location"></div>
     <div class="md-duration"></div>
     <div class="md-desc"></div>
+    <div class="md-link" aria-label="Link"></div>
     <div class="md-route-wrap" id="md-route-wrap">
       <h3 class="md-route-heading">Como chegar</h3>
       <div id="md-route-map"></div>
@@ -1428,6 +1487,8 @@ body.app-offline .lightbox {
     </div>
     <h3 class="md-gallery-heading" id="md-gallery-heading">Fotos</h3>
     <div class="md-gallery"></div>
+    <h3 class="md-files-heading" id="md-files-heading" style="display:none">Arquivos</h3>
+    <div class="md-files" id="md-files"></div>
   </div>
 </div>
 
@@ -1481,6 +1542,10 @@ body.app-offline .lightbox {
         <input name="durationMinutes" type="number" min="0" placeholder="90" onblur="autosave()">
       </div>
       <div class="form-group">
+        <label>Link</label>
+        <input name="link" type="url" placeholder="https://…" onblur="autosave()">
+      </div>
+      <div class="form-group">
         <label>Tags <span class="form-hint">— clique para mudar cor, × para remover</span></label>
         <div id="edit-tags" class="tags-editor"></div>
         <div class="tag-add-row">
@@ -1494,8 +1559,17 @@ body.app-offline .lightbox {
         <div id="edit-photos" class="edit-photos-grid"></div>
         <label class="photo-upload-btn">
           + Adicionar fotos
-          <input type="file" accept="image/*" multiple style="display:none"
+          <input id="edit-photo-input" type="file" accept="image/*" multiple style="display:none"
             onchange="handlePhotoSelect(this)">
+        </label>
+      </div>
+      <div class="form-group">
+        <label>Arquivos</label>
+        <div id="edit-files" class="edit-files-list"></div>
+        <label class="photo-upload-btn">
+          + Adicionar arquivos
+          <input id="edit-files-input" type="file" multiple style="display:none"
+            onchange="handleAttachmentSelect(this)">
         </label>
       </div>
       <button type="button" class="btn-notify-full" onclick="saveEditWithNotify()">Notificar grupo</button>
@@ -1573,6 +1647,7 @@ let currentEventId = null;
 let currentDay = null;
 let editTags = [];
 let pendingPhotos = [];
+let pendingFiles = [];
 let autosaveInFlight = false;
 let lastSetDayIdx = 0;
 let routeInitialized = false;
@@ -2196,6 +2271,29 @@ function openDetail(id, opts = {}) {
   modal.querySelector('.md-title').textContent = ev.title;
   modal.querySelector('.md-desc').textContent  = ev.description || '';
 
+  const linkEl = modal.querySelector('.md-link');
+  const rawLink = (ev.link || '').trim();
+  linkEl.classList.remove('has-link');
+  linkEl.textContent = '';
+  if (rawLink) {
+    let ok = false;
+    try {
+      const u = new URL(rawLink);
+      ok = u.protocol === 'http:' || u.protocol === 'https:';
+    } catch (_) { /* ignore */ }
+    if (ok) {
+      const a = document.createElement('a');
+      a.href = rawLink;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = rawLink;
+      linkEl.appendChild(a);
+    } else {
+      linkEl.textContent = rawLink;
+    }
+    linkEl.classList.add('has-link');
+  }
+
   const locEl = modal.querySelector('.md-location');
   if (ev.location?.address) {
     const q = ev.location.lat && ev.location.lng
@@ -2226,6 +2324,24 @@ function openDetail(id, opts = {}) {
   } else {
     gallery.innerHTML = '<p class="md-gallery-empty">Sem fotos</p>';
     gallery.style.display = 'block';
+  }
+
+  const filesWrap = document.getElementById('md-files');
+  const filesHeading = document.getElementById('md-files-heading');
+  if (filesWrap) filesWrap.textContent = '';
+  if (ev.files?.length && filesWrap) {
+    if (filesHeading) filesHeading.style.display = 'block';
+    ev.files.forEach((f) => {
+      const a = document.createElement('a');
+      a.className = 'md-file-item';
+      a.href = `/uploads/${f}`;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = f;
+      filesWrap.appendChild(a);
+    });
+  } else {
+    if (filesHeading) filesHeading.style.display = 'none';
   }
 
   const navTitle = document.getElementById('detail-nav-title');
@@ -2345,6 +2461,7 @@ function buildEditPayload(form) {
     },
     durationMinutes: parseInt(form.querySelector('[name=durationMinutes]').value, 10) || null,
     tags: editTags,
+    link: (form.querySelector('[name=link]')?.value ?? '').trim(),
   };
 }
 
@@ -2369,16 +2486,44 @@ async function uploadPendingPhotosIfAny() {
     }
     const updated = await r2.json();
     pendingPhotos = [];
-    const form = document.getElementById('edit-form');
-    const fi = form?.querySelector('input[type=file]');
-    if (fi) fi.value = '';
     mergeEventIntoCache(updated);
     renderEditPhotos(updated.photos || []);
+    const photoIn = document.getElementById('edit-photo-input');
+    if (photoIn) photoIn.value = '';
     return updated;
   } catch {
     showToast('Erro ao enviar fotos', { type: 'error' });
     return null;
   }
+}
+
+async function uploadPendingFilesIfAny() {
+  if (!currentEventId || !pendingFiles.length) return null;
+  const fd = new FormData();
+  pendingFiles.forEach(f => fd.append('files', f));
+  try {
+    const r2 = await fetch(`/api/events/${currentEventId}/files`, { method: 'POST', body: fd });
+    if (!r2.ok) {
+      showToast('Erro ao enviar arquivos', { type: 'error' });
+      return null;
+    }
+    const updated = await r2.json();
+    pendingFiles = [];
+    const fi = document.getElementById('edit-files-input');
+    if (fi) fi.value = '';
+    mergeEventIntoCache(updated);
+    renderEditFiles(updated.files || []);
+    return updated;
+  } catch {
+    showToast('Erro ao enviar arquivos', { type: 'error' });
+    return null;
+  }
+}
+
+function getCurrentEditFiles() {
+  if (!currentEventId) return [];
+  const ev = eventsCache.find(e => e._id === currentEventId);
+  return ev?.files || [];
 }
 
 async function autosave() {
@@ -2424,6 +2569,7 @@ async function autosave() {
     }
     mergeEventIntoCache(updated);
     await uploadPendingPhotosIfAny();
+    await uploadPendingFilesIfAny();
     renderAllTimelines();
     updateBar();
     maybeToastAutosaveOk();
@@ -2460,13 +2606,18 @@ function openEditHydrate(id) {
   form.querySelector('[name=location_lat]').value     = ev.location?.lat ?? '';
   form.querySelector('[name=location_lng]').value     = ev.location?.lng ?? '';
   form.querySelector('[name=durationMinutes]').value  = ev.durationMinutes ?? '';
+  form.querySelector('[name=link]').value             = ev.link || '';
 
   editTags    = (ev.tags || []).map(t => ({ ...t }));
   pendingPhotos = [];
-  const fileInput = form.querySelector('input[type=file]');
-  if (fileInput) fileInput.value = '';
+  pendingFiles = [];
+  const photoIn = document.getElementById('edit-photo-input');
+  const filesIn = document.getElementById('edit-files-input');
+  if (photoIn) photoIn.value = '';
+  if (filesIn) filesIn.value = '';
   refreshTagsUI();
   renderEditPhotos(ev.photos || []);
+  renderEditFiles(ev.files || []);
 
   setEditTitles('Editar evento', 'Editar evento');
   updateRemoveButtonVisibility();
@@ -2499,10 +2650,14 @@ function openCreate(day) {
   form.querySelector('[name=location_lng]').value = '';
   editTags = [];
   pendingPhotos = [];
-  const fileInput = form.querySelector('input[type=file]');
-  if (fileInput) fileInput.value = '';
+  pendingFiles = [];
+  const photoIn = document.getElementById('edit-photo-input');
+  const filesIn = document.getElementById('edit-files-input');
+  if (photoIn) photoIn.value = '';
+  if (filesIn) filesIn.value = '';
   refreshTagsUI();
   renderEditPhotos([]);
+  renderEditFiles([]);
 
   setEditTitles('Novo evento', 'Novo evento');
   updateRemoveButtonVisibility();
@@ -2591,7 +2746,7 @@ async function deletePhoto(filename) {
   if (!currentEventId) return;
   if (!confirm('Remover esta foto?')) return;
   try {
-    const res = await fetch(`/api/events/${currentEventId}/photos/${filename}`, { method: 'DELETE' });
+    const res = await fetch(`/api/events/${currentEventId}/photos/${encodeURIComponent(filename)}`, { method: 'DELETE' });
     if (!res.ok) {
       showToast('Erro ao remover foto', { type: 'error' });
       return;
@@ -2604,6 +2759,67 @@ async function deletePhoto(filename) {
     showToast('Foto removida', { type: 'success' });
   } catch {
     showToast('Erro ao remover foto', { type: 'error' });
+  }
+}
+
+function renderEditFiles(savedFiles) {
+  const c = document.getElementById('edit-files');
+  if (!c) return;
+  c.innerHTML = '';
+  (savedFiles || []).forEach((f) => {
+    const row = document.createElement('div');
+    row.className = 'edit-file-item';
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'edit-file-name';
+    const a = document.createElement('a');
+    a.href = `/uploads/${f}`;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.textContent = f;
+    nameSpan.appendChild(a);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'delete-photo-btn';
+    btn.textContent = '×';
+    btn.onclick = () => deleteEventFile(f);
+    row.appendChild(nameSpan);
+    row.appendChild(btn);
+    c.appendChild(row);
+  });
+  pendingFiles.forEach((file) => {
+    const row = document.createElement('div');
+    row.className = 'edit-file-item pending-preview';
+    const span = document.createElement('span');
+    span.className = 'edit-file-name';
+    span.textContent = file.name;
+    row.appendChild(span);
+    c.appendChild(row);
+  });
+}
+
+async function handleAttachmentSelect(input) {
+  pendingFiles = [...input.files];
+  renderEditFiles(getCurrentEditFiles());
+  await autosave();
+}
+
+async function deleteEventFile(filename) {
+  if (!currentEventId) return;
+  if (!confirm('Remover este arquivo?')) return;
+  try {
+    const res = await fetch(`/api/events/${currentEventId}/files/${encodeURIComponent(filename)}`, { method: 'DELETE' });
+    if (!res.ok) {
+      showToast('Erro ao remover arquivo', { type: 'error' });
+      return;
+    }
+    const updated = await res.json();
+    eventsCache = eventsCache.map(e => e._id === currentEventId ? updated : e);
+    persistEventsToStorage();
+    renderAllTimelines();
+    renderEditFiles(updated.files || []);
+    showToast('Arquivo removido', { type: 'success' });
+  } catch {
+    showToast('Erro ao remover arquivo', { type: 'error' });
   }
 }
 
@@ -2648,6 +2864,8 @@ async function saveEditWithNotify() {
     mergeEventIntoCache(updated);
     const afterPhotos = await uploadPendingPhotosIfAny();
     if (afterPhotos) updated = afterPhotos;
+    const afterFiles = await uploadPendingFilesIfAny();
+    if (afterFiles) updated = afterFiles;
     renderAllTimelines();
     updateBar();
     updateRemoveButtonVisibility();

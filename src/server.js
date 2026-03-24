@@ -380,10 +380,12 @@ app.post('/api/events', requireAuth, async (req, res) => {
     isoTime:         String(body.isoTime).trim(),
     title,
     description:     body.description ?? '',
+    link:            body.link ?? '',
     location:        body.location || { address: '', lat: null, lng: null },
     durationMinutes: body.durationMinutes ?? null,
     tags:            body.tags ?? [],
     photos:          body.photos ?? [],
+    files:           body.files ?? [],
   });
 
   if (notify) {
@@ -445,10 +447,28 @@ app.delete('/api/events/:id/photos/:filename', requireAuth, async (req, res) => 
   res.json(event);
 });
 
+app.post('/api/events/:id/files', requireAuth, upload.array('files', 20), async (req, res) => {
+  const filenames = (req.files || []).map(f => f.filename);
+  const event = await Event.findByIdAndUpdate(
+    req.params.id,
+    { $push: { files: { $each: filenames } } },
+    { returnDocument: 'after' }
+  );
+  res.json(event);
+});
+
+app.delete('/api/events/:id/files/:filename', requireAuth, async (req, res) => {
+  const { id, filename } = req.params;
+  const filePath = path.join(uploadsDir, filename);
+  if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  const event = await Event.findByIdAndUpdate(id, { $pull: { files: filename } }, { returnDocument: 'after' });
+  res.json(event);
+});
+
 app.delete('/api/events/:id', requireAuth, async (req, res) => {
   const ev = await Event.findById(req.params.id);
   if (!ev) return res.status(404).json({ error: 'Not found' });
-  for (const f of ev.photos || []) {
+  for (const f of [...(ev.photos || []), ...(ev.files || [])]) {
     const fp = path.join(uploadsDir, f);
     if (fs.existsSync(fp)) fs.unlinkSync(fp);
   }

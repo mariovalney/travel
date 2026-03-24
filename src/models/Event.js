@@ -27,6 +27,7 @@ const eventSchema = new mongoose.Schema({
     minlength: 1,
   },
   description:     { type: String, default: '' },
+  link:            { type: String, default: '' },
   location: {
     address: { type: String, default: '' },
     lat:     { type: Number, default: null },
@@ -35,6 +36,7 @@ const eventSchema = new mongoose.Schema({
   durationMinutes: { type: Number, default: null },
   tags:            { type: [tagSchema], default: [] },
   photos:          { type: [String], default: [] },
+  files:           { type: [String], default: [] },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Event', eventSchema);
