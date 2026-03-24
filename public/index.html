@@ -699,13 +699,15 @@ footer {
 }
 
 .md-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   font-size: 14px;
-  color: var(--blue);
-  text-decoration: none;
-  word-break: break-all;
+  word-break: break-word;
 }
 
-.md-file-item:hover { text-decoration: underline; }
+.md-file-item .btn-tag { flex-shrink: 0; }
 
 .edit-files-list {
   display: flex;
@@ -733,6 +735,7 @@ footer {
 }
 
 .edit-file-item .edit-file-name a { color: var(--blue); text-decoration: none; }
+.edit-file-item .delete-photo-btn { position: static; }
 
 .gallery-photo {
   width: 100%;
@@ -2332,13 +2335,19 @@ function openDetail(id, opts = {}) {
   if (ev.files?.length && filesWrap) {
     if (filesHeading) filesHeading.style.display = 'block';
     ev.files.forEach((f) => {
-      const a = document.createElement('a');
-      a.className = 'md-file-item';
-      a.href = `/uploads/${f}`;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      a.textContent = f;
-      filesWrap.appendChild(a);
+      const { diskName, displayName } = normalizeEventFile(f);
+      const row = document.createElement('div');
+      row.className = 'md-file-item';
+      const name = document.createElement('span');
+      name.textContent = displayName;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn-tag';
+      btn.textContent = 'Download';
+      btn.onclick = () => triggerFileDownload(diskName, displayName);
+      row.appendChild(name);
+      row.appendChild(btn);
+      filesWrap.appendChild(row);
     });
   } else {
     if (filesHeading) filesHeading.style.display = 'none';
@@ -2524,6 +2533,25 @@ function getCurrentEditFiles() {
   if (!currentEventId) return [];
   const ev = eventsCache.find(e => e._id === currentEventId);
   return ev?.files || [];
+}
+
+function normalizeEventFile(fileItem) {
+  if (typeof fileItem === 'string') return { diskName: fileItem, displayName: fileItem };
+  return {
+    diskName: fileItem?.diskName || '',
+    displayName: fileItem?.displayName || fileItem?.diskName || 'arquivo',
+  };
+}
+
+function triggerFileDownload(diskName, displayName) {
+  if (!diskName) return;
+  const a = document.createElement('a');
+  a.href = `/uploads/${diskName}`;
+  a.download = displayName || diskName;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 }
 
 async function autosave() {
@@ -2767,22 +2795,24 @@ function renderEditFiles(savedFiles) {
   if (!c) return;
   c.innerHTML = '';
   (savedFiles || []).forEach((f) => {
+    const { diskName, displayName } = normalizeEventFile(f);
     const row = document.createElement('div');
     row.className = 'edit-file-item';
     const nameSpan = document.createElement('span');
     nameSpan.className = 'edit-file-name';
-    const a = document.createElement('a');
-    a.href = `/uploads/${f}`;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    a.textContent = f;
-    nameSpan.appendChild(a);
+    nameSpan.textContent = displayName;
+    const downloadBtn = document.createElement('button');
+    downloadBtn.type = 'button';
+    downloadBtn.className = 'btn-tag';
+    downloadBtn.textContent = 'Download';
+    downloadBtn.onclick = () => triggerFileDownload(diskName, displayName);
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'delete-photo-btn';
     btn.textContent = '×';
-    btn.onclick = () => deleteEventFile(f);
+    btn.onclick = () => deleteEventFile(diskName);
     row.appendChild(nameSpan);
+    row.appendChild(downloadBtn);
     row.appendChild(btn);
     c.appendChild(row);
   });
@@ -2798,7 +2828,11 @@ function renderEditFiles(savedFiles) {
 }
 
 async function handleAttachmentSelect(input) {
-  pendingFiles = [...input.files];
+  pendingFiles = Array.from(input.files || []).map((f) => {
+    const customName = prompt('Nome para o arquivo:', f.name);
+    const finalName = (customName && customName.trim()) ? customName.trim() : f.name;
+    return new File([f], finalName, { type: f.type, lastModified: f.lastModified });
+  });
   renderEditFiles(getCurrentEditFiles());
   await autosave();
 }

@@ -5,6 +5,11 @@ const tagSchema = new mongoose.Schema({
   style: { type: String, enum: ['default', 'dark', 'red'], default: 'default' },
 }, { _id: false });
 
+const eventFileSchema = new mongoose.Schema({
+  diskName: { type: String, required: true, trim: true },
+  displayName: { type: String, required: true, trim: true },
+}, { _id: false });
+
 const eventSchema = new mongoose.Schema({
   day:             { type: Number, required: true, min: 0, max: 3 },
   order:           { type: Number, required: true },
@@ -36,7 +41,7 @@ const eventSchema = new mongoose.Schema({
   durationMinutes: { type: Number, default: null },
   tags:            { type: [tagSchema], default: [] },
   photos:          { type: [String], default: [] },
-  files:           { type: [String], default: [] },
+  files:           { type: [eventFileSchema], default: [] },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Event', eventSchema);

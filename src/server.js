@@ -454,10 +454,13 @@ app.delete('/api/events/:id/photos/:filename', requireAuth, async (req, res) => 
 });
 
 app.post('/api/events/:id/files', requireAuth, upload.array('files', 20), async (req, res) => {
-  const filenames = (req.files || []).map(f => f.filename);
+  const fileMetas = (req.files || []).map((f) => ({
+    diskName: f.filename,
+    displayName: f.originalname,
+  }));
   const event = await Event.findByIdAndUpdate(
     req.params.id,
-    { $push: { files: { $each: filenames } } },
+    { $push: { files: { $each: fileMetas } } },
     { returnDocument: 'after' }
   );
   res.json(event);
@@ -467,14 +470,21 @@ app.delete('/api/events/:id/files/:filename', requireAuth, async (req, res) => {
   const { id, filename } = req.params;
   const filePath = path.join(uploadsDir, filename);
   if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-  const event = await Event.findByIdAndUpdate(id, { $pull: { files: filename } }, { returnDocument: 'after' });
+  const existing = await Event.findById(id);
+  if (!existing) return res.status(404).json({ error: 'Not found' });
+  const files = (existing.files || []).filter((f) => {
+    if (typeof f === 'string') return f !== filename;
+    return f?.diskName !== filename;
+  });
+  const event = await Event.findByIdAndUpdate(id, { files }, { returnDocument: 'after' });
   res.json(event);
 });
 
 app.delete('/api/events/:id', requireAuth, async (req, res) => {
   const ev = await Event.findById(req.params.id);
   if (!ev) return res.status(404).json({ error: 'Not found' });
-  for (const f of [...(ev.photos || []), ...(ev.files || [])]) {
+  const fileDiskNames = (ev.files || []).map((f) => (typeof f === 'string' ? f : f.diskName));
+  for (const f of [...(ev.photos || []), ...fileDiskNames]) {
     const fp = path.join(uploadsDir, f);
     if (fs.existsSync(fp)) fs.unlinkSync(fp);
   }
