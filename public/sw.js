@@ -1,8 +1,10 @@
 // IMPORTANTE: sempre que mudar arquivos do PWA (index, css/js, manifest, icones, sw),
 // incremente a versao do CACHE para forcar clientes instalados a receberem update.
-const CACHE = 'bue-2026-v44';
+const CACHE = 'bue-2026-v45';
 const ASSETS = [
   '/index.html',
+  '/styles.css',
+  '/app.js',
   '/manifest.json',
   '/favicon.ico',
   '/favicon-32x32.png',
