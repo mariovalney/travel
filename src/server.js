@@ -5,6 +5,7 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
 const { Strategy: GoogleStrategy } = require('passport-google-oauth20');
+const { Strategy: MicrosoftStrategy } = require('passport-microsoft');
 const mongoose = require('mongoose');
 const multer   = require('multer');
 const webpush  = require('web-push');
@@ -26,14 +27,14 @@ const ALLOWED_EMAILS = new Set([
   'mariovalney@gmail.com',
   'lu.nagasaka@gmail.com',
   'ig.pessoa@gmail.com',
-  'diandramfc@gmail.com',
+  'diandradb@hotmail.com',
 ]);
 
 const FRIEND_EMAILS = [
   'mariovalney@gmail.com',
   'lu.nagasaka@gmail.com',
   'ig.pessoa@gmail.com',
-  'diandramfc@gmail.com',
+  'diandradb@hotmail.com',
 ];
 
 /** Simplified mainland Brazil bounding box: if inside, store GRU instead of raw coords. */
@@ -71,15 +72,43 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
 
+async function upsertOAuthUser(email, name, photo) {
+  if (!email || !ALLOWED_EMAILS.has(email)) return false;
+  await User.findOneAndUpdate(
+    { email },
+    {
+      name:      name || '',
+      photo:     photo ?? null,
+      lastLogin: new Date(),
+    },
+    { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
+  );
+  return true;
+}
+
+function microsoftEmailFromProfile(profile) {
+  const fromList = profile.emails?.map((e) => e?.value).find(Boolean);
+  if (fromList) return String(fromList).toLowerCase();
+  const upn = profile.userPrincipalName;
+  if (upn && String(upn).includes('@')) return String(upn).toLowerCase();
+  return null;
+}
+
 // ── Express core ─────────────────────────────────────────────
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 app.use(express.json());
 
-const AUTH_ENABLED = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+const GOOGLE_AUTH = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+const MICROSOFT_AUTH = !!(process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET);
+const AUTH_ENABLED = GOOGLE_AUTH || MICROSOFT_AUTH;
 if (!AUTH_ENABLED) {
-  console.warn('⚠ Auth desativado (modo dev) — defina GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET');
+  console.warn('⚠ Auth desativado (modo dev) — defina GOOGLE_* ou MICROSOFT_* OAuth');
 }
+
+app.get('/api/auth/providers', (_req, res) => {
+  res.json({ google: GOOGLE_AUTH, microsoft: MICROSOFT_AUTH });
+});
 
 app.use(session({
   secret: process.env.SESSION_SECRET || 'bue-2026-dev-secret',
@@ -93,31 +122,6 @@ app.use(session({
 }));
 
 if (AUTH_ENABLED) {
-  passport.use(new GoogleStrategy(
-    {
-      clientID:     process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL:  process.env.CALLBACK_URL || '/auth/google/callback',
-    },
-    async (_at, _rt, profile, done) => {
-      try {
-        const email = profile.emails?.[0]?.value?.toLowerCase();
-        if (!ALLOWED_EMAILS.has(email)) return done(null, false);
-        await User.findOneAndUpdate(
-          { email },
-          {
-            name:      profile.displayName || '',
-            photo:     profile.photos?.[0]?.value || null,
-            lastLogin: new Date(),
-          },
-          { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
-        );
-        return done(null, email);
-      } catch (err) {
-        return done(err);
-      }
-    }
-  ));
   passport.serializeUser((email, done) => done(null, email));
   passport.deserializeUser(async (email, done) => {
     try {
@@ -138,6 +142,52 @@ if (AUTH_ENABLED) {
   });
   app.use(passport.initialize());
   app.use(passport.session());
+
+  if (GOOGLE_AUTH) {
+    passport.use(new GoogleStrategy(
+      {
+        clientID:     process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL:  process.env.CALLBACK_URL || '/auth/google/callback',
+      },
+      async (_at, _rt, profile, done) => {
+        try {
+          const email = profile.emails?.[0]?.value?.toLowerCase();
+          const ok = await upsertOAuthUser(
+            email,
+            profile.displayName || '',
+            profile.photos?.[0]?.value || null
+          );
+          if (!ok) return done(null, false);
+          return done(null, email);
+        } catch (err) {
+          return done(err);
+        }
+      }
+    ));
+  }
+
+  if (MICROSOFT_AUTH) {
+    passport.use(new MicrosoftStrategy(
+      {
+        clientID:      process.env.MICROSOFT_CLIENT_ID,
+        clientSecret:  process.env.MICROSOFT_CLIENT_SECRET,
+        callbackURL:   process.env.MICROSOFT_CALLBACK_URL || '/auth/microsoft/callback',
+        scope:         ['user.read'],
+        addUPNAsEmail: true,
+      },
+      async (_at, _rt, profile, done) => {
+        try {
+          const email = microsoftEmailFromProfile(profile);
+          const ok = await upsertOAuthUser(email, profile.displayName || '', null);
+          if (!ok) return done(null, false);
+          return done(null, email);
+        } catch (err) {
+          return done(err);
+        }
+      }
+    ));
+  }
 }
 
 function requireAuth(req, res, next) {
@@ -146,11 +196,20 @@ function requireAuth(req, res, next) {
 }
 
 // ── Auth routes ──────────────────────────────────────────────
-if (AUTH_ENABLED) {
+if (GOOGLE_AUTH) {
   app.get('/auth/google', passport.authenticate('google', { scope: ['email', 'profile'] }));
 
   app.get('/auth/google/callback',
     passport.authenticate('google', { failureRedirect: '/login?erro=1' }),
+    (_req, res) => res.redirect('/')
+  );
+}
+
+if (MICROSOFT_AUTH) {
+  app.get('/auth/microsoft', passport.authenticate('microsoft', { prompt: 'select_account' }));
+
+  app.get('/auth/microsoft/callback',
+    passport.authenticate('microsoft', { failureRedirect: '/login?erro=1' }),
     (_req, res) => res.redirect('/')
   );
 }
