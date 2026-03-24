@@ -55,10 +55,14 @@ if (PUSH_ENABLED) {
   );
 }
 
-async function notifySubscribers(title, body) {
+async function notifySubscribers(title, body, eventId = null) {
   if (!PUSH_ENABLED) return;
   const subs = await PushSub.find();
-  const payload = JSON.stringify({ title, body });
+  const payload = JSON.stringify({
+    title,
+    body,
+    ...(eventId != null ? { eventId: String(eventId) } : {}),
+  });
   subs.forEach(s => webpush.sendNotification(s.subscription, payload).catch(() => {}));
 }
 
@@ -392,7 +396,8 @@ app.post('/api/events', requireAuth, async (req, res) => {
     const who = req.user?.name?.split(' ')[0] || 'Alguém';
     await notifySubscribers(
       'Roteiro atualizado ✈',
-      `${who} adicionou "${event.title}"`
+      `${who} adicionou "${event.title}"`,
+      event._id
     );
   }
 
@@ -422,7 +427,8 @@ app.put('/api/events/:id', requireAuth, async (req, res) => {
     const who = req.user?.name?.split(' ')[0] || 'Alguém';
     await notifySubscribers(
       'Roteiro atualizado ✈',
-      `${who} editou "${event.title}"`
+      `${who} editou "${event.title}"`,
+      event._id
     );
   }
 

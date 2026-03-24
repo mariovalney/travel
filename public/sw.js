@@ -1,4 +1,4 @@
-const CACHE = 'bue-2026-v39';
+const CACHE = 'bue-2026-v40';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -45,16 +45,31 @@ self.addEventListener('fetch', e => {
 
 self.addEventListener('push', e => {
   const data = e.data?.json() ?? { title: 'BUE 2026 ✈', body: 'Roteiro atualizado' };
+  const url = data.eventId ? `/e/${data.eventId}` : '/';
   e.waitUntil(
     self.registration.showNotification(data.title, {
       body:  data.body,
       icon:  './icon-192.png',
       badge: './favicon.png',
+      data:  { url },
     })
   );
 });
 
 self.addEventListener('notificationclick', e => {
   e.notification.close();
-  e.waitUntil(clients.openWindow('/'));
+  const path = e.notification.data?.url || '/';
+  const fullUrl = new URL(path, self.location.origin).href;
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      const existing = list.find((c) => c.url.includes(self.location.origin));
+      if (existing) {
+        return existing.focus().then((c) => {
+          if (typeof c.navigate === 'function') return c.navigate(fullUrl);
+          return clients.openWindow(fullUrl);
+        });
+      }
+      return clients.openWindow(fullUrl);
+    })
+  );
 });
