@@ -4,9 +4,9 @@ const CACHE = 'bue-2026-v42';
 const ASSETS = [
   './index.html',
   './manifest.json',
-  './favicon.ico',
-  './favicon-32x32.png',
-  './favicon-16x16.png',
+  '/favicon.ico',
+  '/favicon-32x32.png',
+  '/favicon-16x16.png',
   './apple-touch-icon.png',
   './android-chrome-192x192.png',
   './android-chrome-512x512.png',
@@ -52,7 +52,7 @@ self.addEventListener('push', e => {
     self.registration.showNotification(data.title, {
       body:  data.body,
       icon:  './icon-192.png',
-      badge: './favicon.png',
+      badge: '/favicon.png',
       data:  { url },
     })
   );
